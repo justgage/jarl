@@ -43,6 +43,23 @@ var Game = {
    },
 };
 
+var TextBox = {
+   el : document.getElementById("text"),
+   last : null, // the last element pushed
+   push : function (text) {
+      var message = document.createElement("div");
+      message.innerHTML = text;
+      message.className = "mess";
+
+      this.el.insertBefore(message, this.last);
+      this.last = message;
+   }
+};
+
+TextBox.push('Wellcome to jarl <br> push "?" for instructions');
+TextBox.push('You entered level 1');
+
+
 var Gamepiece = {
    x : 0,
    y : 0,
@@ -97,37 +114,49 @@ Wall.setSprite('wall.min.gif');
 Mousetrap.bind(["left", "h"], function() {
    Player.fliped = true;
    Player.moveRel(-32, 0);
-});
+}, 'keyup');
 
 Mousetrap.bind(["right", "l"], function() {
    Player.fliped = false;
    Player.moveRel(32, 0);
-});
+}, 'keyup');
 
 Mousetrap.bind(["up", "k"], function() {
    Player.moveRel(0, -32);
-});
+}, 'keyup');
 
 Mousetrap.bind(["down", "j"], function() {
    Player.moveRel(0, 32);
-});
+}, 'keyup');
 
 Mousetrap.bind(["y"], function() {
    Player.fliped = true;
    Player.moveRel(-32, -32);
-});
+}, 'keyup');
 
 Mousetrap.bind(["u"], function() {
    Player.fliped = false;
    Player.moveRel(32, -32);
-});
+}, 'keyup');
 
 Mousetrap.bind(["n"], function() {
    Player.fliped = true;
    Player.moveRel(-32, 32);
-});
+}, 'keyup');
 
 Mousetrap.bind(["m"], function() {
    Player.fliped = false;
    Player.moveRel(32, 32);
-});
+}, 'keyup');
+
+Mousetrap.bind(["?"], function() {
+   TextBox.push("Controls: <br />" +
+                "h - left <br />" +
+                "j - down <br />" +
+                "k - up <br />" +
+                "l - right <br />" +
+                "y - up-left <br />" +
+                "u - up-right <br />" +
+                "n - down-left <br />" +
+                "m - down-right <br />");
+}, 'keyup');

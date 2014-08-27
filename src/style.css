@@ -1,12 +1,32 @@
+body {
+   background-color: #170E0B;
+   color: #B19992;
+}
+
+.mess {
+   border-bottom : 1px solid #170E0B;
+   margin: 0.5em;
+}
+
 .fixed {
    position: fixed;
+}
+
+#text {
+   font-family: monospace;
+   width: 480px;
+   height: 480px;
+   left : 480px;
+   top : 0px;
+   background-color: #281814;
+   overflow-y: scroll;
 }
 
 #room {
    background-image:url('ground.min.gif');
    background-repeat: repeat;
-   width: 500px;
-   height: 500px;
+   width: 480px;
+   height: 480px;
    left : 0px;
    top : 0px;
 }
