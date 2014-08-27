@@ -1,0 +1,36 @@
+.fixed {
+   position: fixed;
+}
+
+#room {
+   background-image:url('ground.min.gif');
+   background-repeat: repeat;
+   width: 500px;
+   height: 500px;
+   left : 0px;
+   top : 0px;
+}
+
+.trans {
+-webkit-transition: all 800ms cubic-bezier(0.000, 0.790, 0.380, 1); /* older webkit */
+-webkit-transition: all 800ms cubic-bezier(0.000, 0.790, 0.380, 1.025); 
+   -moz-transition: all 800ms cubic-bezier(0.000, 0.790, 0.380, 1.025); 
+     -o-transition: all 800ms cubic-bezier(0.000, 0.790, 0.380, 1.025); 
+        transition: all 800ms cubic-bezier(0.000, 0.790, 0.380, 1.025); /* custom */
+
+-webkit-transition-timing-function: cubic-bezier(0.000, 0.790, 0.380, 1); /* older webkit */
+-webkit-transition-timing-function: cubic-bezier(0.000, 0.790, 0.380, 1.025); 
+   -moz-transition-timing-function: cubic-bezier(0.000, 0.790, 0.380, 1.025); 
+     -o-transition-timing-function: cubic-bezier(0.000, 0.790, 0.380, 1.025); 
+        transition-timing-function: cubic-bezier(0.000, 0.790, 0.380, 1.025); /* custom */
+}
+
+
+.fliped {
+        -moz-transform: scaleX(-1);
+        -o-transform: scaleX(-1);
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+        filter: FlipH;
+        -ms-filter: "FlipH";
+}
