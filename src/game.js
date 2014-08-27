@@ -95,21 +95,28 @@ var Gamepiece = {
       this.step();
    },
 
-   setSprite : function (src) {
-      this.src = src;
+   extend : function(preObject) {
+      var object = Object.create(this);
+
+      for(var index in preObject) {
+         object[index] = preObject[index];
+      }
+
+      return object;
    }
 
 };
 
-var Player = Object.create(Gamepiece);
-Player.setSprite("night.min.gif");
+var Player = Gamepiece.extend({
+   type : 'player',
+   src : "night.min.gif"
+});
 
 Game.add(Player);
 
-var Wall = Object.create(Gamepiece);
-
-Wall.setSprite('wall.min.gif');
-
+var Wall = Gamepiece.extend({
+   src : 'wall.min.gif'
+});
 
 Mousetrap.bind(["left", "h"], function() {
    Player.fliped = true;
