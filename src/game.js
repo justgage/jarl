@@ -157,13 +157,22 @@ Mousetrap.bind(["m"], function() {
 }, 'keyup');
 
 Mousetrap.bind(["?"], function() {
-   TextBox.push("Controls: <br />" +
-                "h - left <br />" +
-                "j - down <br />" +
-                "k - up <br />" +
-                "l - right <br />" +
-                "y - up-left <br />" +
-                "u - up-right <br />" +
-                "n - down-left <br />" +
-                "m - down-right <br />");
+
+   help = [
+      "---Controls---",
+      "arrow keys - move",
+      "~ or ~",
+      "h - left",
+      "j - down",
+      "k - up",
+      "l - right",
+      "y - up-left",
+      "u - up-right",
+      "n - down-left",
+      "m - down-right",
+      "",
+      "---GamePlay---",
+      "move twards an enemy to attack"];
+
+   TextBox.push(help.join("<br />"));
 }, 'keyup');
