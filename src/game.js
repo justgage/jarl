@@ -19,6 +19,12 @@ var Game = {
 
       this.show(object);
    },
+
+   addAll : function(array) {
+      for (var i = 0, len = array.length; i < len; i++) {
+         this.add(array[i]);
+      }
+   },
    
    // remove piece from room
    remove : function(object) {
@@ -60,7 +66,23 @@ TextBox.push('Wellcome to jarl <br> push "?" for instructions');
 TextBox.push('You entered level 1');
 
 
-var Gamepiece = {
+var Extendable = {
+   extend : function(preObject) {
+      var object = Object.create(this);
+
+      for(var index in preObject) {
+         object[index] = preObject[index];
+      }
+
+      if ("construct" in object) {
+         object.construct();
+      }
+
+      return object;
+   }
+};
+
+var Gamepiece = Extendable.extend({
    x : 0,
    y : 0,
    id : null,
@@ -69,7 +91,7 @@ var Gamepiece = {
    // create the dom element for this peice
    create: function() {
       this.el           = document.createElement("img");
-      this.el.className = this.el.className;
+      this.el.className = this.className;
       this.el.src       = this.src;
       this.step();
    },
@@ -93,19 +115,8 @@ var Gamepiece = {
       this.x += x;
       this.y += y;
       this.step();
-   },
-
-   extend : function(preObject) {
-      var object = Object.create(this);
-
-      for(var index in preObject) {
-         object[index] = preObject[index];
-      }
-
-      return object;
    }
-
-};
+});
 
 var Player = Gamepiece.extend({
    type : 'player',
@@ -118,61 +129,142 @@ var Wall = Gamepiece.extend({
    src : 'wall.min.gif'
 });
 
-Mousetrap.bind(["left", "h"], function() {
-   Player.fliped = true;
-   Player.moveRel(-32, 0);
-}, 'keyup');
+var Door = Gamepiece.extend({
+   src : 'doorClosed.min.gif'
+});
 
-Mousetrap.bind(["right", "l"], function() {
-   Player.fliped = false;
-   Player.moveRel(32, 0);
-}, 'keyup');
+var Room = Extendable.extend({
 
-Mousetrap.bind(["up", "k"], function() {
-   Player.moveRel(0, -32);
-}, 'keyup');
 
-Mousetrap.bind(["down", "j"], function() {
-   Player.moveRel(0, 32);
-}, 'keyup');
+   // grid : 2d array
+   // grid[x][y]
 
-Mousetrap.bind(["y"], function() {
-   Player.fliped = true;
-   Player.moveRel(-32, -32);
-}, 'keyup');
+   /**
+    * doorObj = {
+    *    left : door
+    *    right : null
+    *    top : "hidden" (invisible door)
+    *    bottom : null
+    * }
+    *
+    */
+   init : function(x, y ,height, width, doorObj) {
+      this.x = x;
+      this.y = y;
+      this.height = height;
+      this.width = width;
 
-Mousetrap.bind(["u"], function() {
-   Player.fliped = false;
-   Player.moveRel(32, -32);
-}, 'keyup');
+      this.grid = [];
 
-Mousetrap.bind(["n"], function() {
-   Player.fliped = true;
-   Player.moveRel(-32, 32);
-}, 'keyup');
+      // populate grid with null
+      for (var i = 0; i < width; i++) {
+         this.grid[i] = [];
+         for (var j = 0; j < height; j++) {
+            this.grid[i][j] = null;
+         }
+      }
 
-Mousetrap.bind(["m"], function() {
-   Player.fliped = false;
-   Player.moveRel(32, 32);
-}, 'keyup');
+      this.doorObj = doorObj;
 
-Mousetrap.bind(["?"], function() {
+      this.createWalls();
+   },
 
-   help = [
-      "---Controls---",
-      "arrow keys - move",
-      "~ or ~",
-      "h - left",
-      "j - down",
-      "k - up",
-      "l - right",
-      "y - up-left",
-      "u - up-right",
-      "n - down-left",
-      "m - down-right",
-      "",
-      "---GamePlay---",
-      "move twards an enemy to attack"];
+   createWalls : function() {
+      //top
+      this.createHozWall(0, this.doorObj.top)
 
-   TextBox.push(help.join("<br />"));
-}, 'keyup');
+      //bottom
+      this.createHozWall(this.height-1, this.doorObj.bottom)
+
+      //left
+      this.createVertWall(0, this.doorObj.left)
+
+      //right
+      this.createVertWall(this.width-1, this.doorObj.right)
+   },
+
+   addObj : function(obj) {
+      obj.currentRoom(this);
+   },
+
+   checkSpot : function(x,y) {
+      this.grid[x][y];
+   },
+
+   createVertWall : function(x, door) {
+      var i = this.height;
+
+      while(i--) {
+         this.grid[x][i] = "wall";
+      }
+
+      // add the door if needed
+      if (door !== null) {
+         this.grid[x][Math.floor(this.height/2)] = door;
+      }
+   },
+
+   createHozWall : function(y, door) {
+      var i = this.width;
+
+      while(i--) {
+         this.grid[i][y] = "wall";
+      }
+
+      // add the door if needed
+      if (door !== null) {
+         this.grid[Math.floor(this.width/2)][y] = door;
+      }
+   },
+
+   create : function() {
+      this.el = document.createElement("canvas");
+   },
+
+   log : function() {
+      // populate grid with null
+
+      var text = "";
+      for (var i = 0; i < this.width; i++) {
+         var line = "";
+         for (var j = 0; j < this.height; j++) {
+            var spot = this.grid[i][j];
+            var letter;
+
+            switch (spot) {
+               case 'wall':
+                  letter = "w"
+                  break;
+               case 'door':
+                  letter = "d"
+                  break;
+               case 'hidden':
+                  letter = "h"
+                  break;
+               
+               default:
+                  letter = "."
+            }
+
+            line += letter;
+         }
+         text += line + "\n";
+      }
+
+      console.log(text);
+
+   }
+
+});
+
+room = Room.extend({});
+
+room.init(0, 0, 20, 20, {
+   top : null,
+   bottom : "door",
+   left : "hidden",
+   right : "door"
+});
+
+room.log();
+
