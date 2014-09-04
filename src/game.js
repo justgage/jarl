@@ -148,9 +148,9 @@ var Room = Extendable.extend({
     * }
     *
     */
-   init : function(x, y ,height, width, doorObj) {
-      this.x = x;
-      this.y = y;
+   init : function(height, width, doorObj) {
+      this.x = 0;
+      this.y = 0;
       this.height = height;
       this.width = width;
 
@@ -241,9 +241,11 @@ var Room = Extendable.extend({
                case 'hidden':
                   letter = "h"
                   break;
-               
-               default:
+               case null:
                   letter = "."
+                  break;
+               default:
+                  letter = "?"
             }
 
             line += letter;
@@ -253,13 +255,23 @@ var Room = Extendable.extend({
 
       console.log(text);
 
+   },
+
+   /**
+    * applys a function to all the objects 
+    */
+   apply : function(func) {
+
    }
+
 
 });
 
+function RoomTest() {
+
 room = Room.extend({});
 
-room.init(0, 0, 20, 20, {
+room.init(20, 20, {
    top : null,
    bottom : "door",
    left : "hidden",
@@ -267,4 +279,126 @@ room.init(0, 0, 20, 20, {
 });
 
 room.log();
+
+}
+
+/**
+ * Generates a level
+ */
+var LevelGen = Extendable.extend({
+   depth : 5,
+   branchChanse : 0.5,
+   begin : function() {
+
+      var root = Room.extend({
+         type : "begining",
+         depth : this.depth
+      });
+
+      var parent = {
+         placement : "bottom",
+         ref : root
+      };
+
+      var firstRoom = this.roomGen(parent, true);
+
+      var firstDoor = Door.extend( {
+         ref : firstRoom
+      });
+
+      var width = Math.floor(Math.random()*50) + 5;
+      var height = Math.floor(Math.random()*50) + 5;
+
+      root.init(width, height, {
+         top : Door.extend({
+            ref : firstDoor
+         })
+      });
+
+      return root;
+   },
+   // generates a random graph of rooms
+   roomGen : function(parent, isRightPath) {
+      var doors = { 
+         up : null,
+         down : null,
+         left : null,
+         right : null
+      };
+
+      var room = Room.extend({
+         depth : parent.ref.depth - 1,
+         isRightPath : isRightPath,
+         type : "random"
+      });
+
+      console.log("generate room at depth: ", parent.ref.depth);
+
+      // replace door with parent
+      doors[parent.ref.placement] = Door.extend({
+         ref : parent.ref
+      });
+
+      var directions = [
+         "up",
+         "down",
+         "left",
+         "right"
+      ];
+
+      // if we aren't too deep yet
+      if (parent.ref.depth > 1) {
+
+         // if this is the right path
+         if (isRightPath) {
+
+            // select a random direction
+            var dirNum = Math.floor(Math.random() * 4);
+
+            // check to make sure it's not ocupied
+            while(doors[directions[dirNum]] !== null) {
+               // select a different one
+               dirNum = Math.floor(Math.random() * 4);
+            }
+
+            // place the right door path
+            doors[directions[dirNum]] = 
+               Door.extend({ ref : this.roomGen({
+               placement : directions[(dirNum + 2) % 4],
+               ref : room
+            }, true)});
+         };
+
+         // go through the directions
+         // and create other offshoots from the right path
+         for(wayName in doors) {
+            var make = Math.random() > 0.5;
+
+            //if we should make it and it's not taken
+            if (make && doors[wayName] === null) {
+               // create the door and the room behind it
+               doors[wayName] = 
+                  Door.extend({ref :this.roomGen({
+                  // opposite side
+                  placement : directions[(directions.indexOf(wayName) + 2) % 4],
+                  ref : room
+               }, false)});
+            }
+         }
+      } else if(isRightPath) { 
+         room.type = "end";
+      }
+
+      var width = Math.floor(Math.random()*50) + 5;
+      var height = Math.floor(Math.random()*50) + 5;
+
+      room.init(height, width, doors);
+
+      return room;
+   }
+})
+
+var firstRoom = LevelGen.begin();
+
+firstRoom.log();
 
