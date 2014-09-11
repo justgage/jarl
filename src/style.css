@@ -3,6 +3,10 @@ body {
    color: #B19992;
 }
 
+.top {
+   z-index : 4;
+}
+
 .mess {
    border-bottom : 1px solid #170E0B;
    margin: 0.5em;
@@ -23,12 +27,14 @@ body {
 }
 
 #room {
+   /*
    background-image:url('ground.min.gif');
    background-repeat: repeat;
    width: 480px;
    height: 480px;
    left : 0px;
    top : 0px;
+   */
 }
 
 .trans {
@@ -46,7 +52,7 @@ body {
 }
 
 
-.fliped {
+.flipped {
         -moz-transform: scaleX(-1);
         -o-transform: scaleX(-1);
         -webkit-transform: scaleX(-1);
