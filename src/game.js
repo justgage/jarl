@@ -311,9 +311,7 @@
 
          piece.move(cord.x * 32, cord.y * 32);
 
-
          if (piece.type === "player") {
-            console.log(fromDoor.placement, "->", Directions.opposite(fromDoor.placement));
             Jarl.changeRoom(this.to);
          }
       }
@@ -331,12 +329,6 @@
 
 
    var Room = Extendable.extend({
-
-
-      // different moveable peices
-      gamepieces : {},
-
-
 
       // create the room
       init : function(height, width, doorObj) {
@@ -361,30 +353,37 @@
          this.createWalls();
       },
 
-
-
-      doorPlacement : function (way) {
+      /**
+       * doorPlacement
+       *
+       * way : door direction
+       * distance : how far inside the room (negative numbers outside)
+       *
+       * returns {x, y} : in cell units NOT pixels
+       */
+      doorPlacement : function (way, distance) {
          var x = 0;
          var y = 0;
+         distance = distance || 1;
 
          switch (way) {
             case 'top':
-               y = 0;
+               y = distance;
                x = Math.floor(this.width / 2);
                break;
 
             case 'bottom':
-               y = this.height - 1;
+               y = this.height - 1 - distance;
                x = Math.floor(this.width / 2);
                break;
 
             case 'left':
-               x = 0;
+               x = distance;
                y = Math.floor(this.height / 2);
                break;
 
             case 'right':
-               x = this.width - 1;
+               x = this.width - 1 - distance;
                y = Math.floor(this.height / 2);
                break;
          }
@@ -394,6 +393,7 @@
             y : y,
          };
       },
+
 
       // creates the walls based on the height, width, door placement
       createWalls : function() {
@@ -465,7 +465,7 @@
       },
 
 
-
+      // show the room in the console
       log : function() {
          // populate grid with null
 
