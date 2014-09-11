@@ -114,11 +114,12 @@
        * Changes the room visible
        */
       changeRoom : function(newRoom) {
-         // write me!
 
          this.hide(this.room);
          this.room = newRoom;
          this.add(newRoom);
+
+         Messages.move(newRoom.width * 32, 0);
 
       },
 
@@ -151,7 +152,12 @@
 
          this.el.insertBefore(message, this.last);
          this.last = message;
+      },
+      move : function(x, y) {
+         this.el.style.left = x + "px";
+         this.el.style.top = y + "px";
       }
+      
    };
 
    Messages.push('Welcome to Jarl <br> push "?" for instructions');
@@ -312,7 +318,7 @@
          piece.move(cord.x * 32, cord.y * 32);
 
          if (piece.type === "player") {
-            Jarl.changeRoom(this.to);
+            Jarl.changeRoom(this.to, this.placement);
          }
       }
 
