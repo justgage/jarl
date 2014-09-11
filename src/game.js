@@ -138,6 +138,7 @@
       begin : function () {
          this.room = LevelGen.begin();
          this.add(this.room);
+         Messages.move(this.room.width*32);
       }
    });
 
@@ -225,7 +226,7 @@
                   window.setTimeout(function () {
                      that.el.style.left  = that.x + "px";
                      that.el.style.top   = that.y + "px";
-                  }, 100);
+                  }, 200);
                }
 
                square.trigger(that);
