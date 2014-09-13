@@ -152,6 +152,7 @@
          message.className = "mess";
 
          this.el.insertBefore(message, this.last);
+
          this.last = message;
       },
       move : function(x, y) {
@@ -244,6 +245,24 @@
       blocking : true, // means other object cant move through him
       src : "night.min.gif",
       z : 4,
+      hp : 100,
+      stats : function() {
+         var html = "<img class='left' src='" + this.src + "'>";
+
+         var hp = "HP = ["
+
+         for (var i = 0, len = this.hp / 2; i < len; i++) {
+            hp += "="
+         }
+
+         for (var i = 0, len = 50 - this.hp / 2; i < len; i++) {
+            hp += " "
+         }
+         hp += "]"
+
+         html += hp;
+         return html;
+      },
       bind : function() {
 
          var me = this;
@@ -283,7 +302,7 @@
 
          Mousetrap.bind(["?"], function() {
 
-            help = [
+            var help = [
                "---Controls---",
                "arrow keys - move",
                "~ or ~",
@@ -296,11 +315,12 @@
                "n - down-left",
                "m - down-right",
                "",
+               "i - view inventory",
                "---GamePlay---",
                "move twards an enemy to attack"];
 
                Messages.push(help.join("<br />"));
-         }, 'keyup');
+         });
       }
    });
 
@@ -436,7 +456,7 @@
             var x = Math.floor(room.width/2) - 2;
             var y = Math.floor(room.height/2);
             room.itemGrid[x][y] = Items.sign.extend({
-               text : "SIGN: Welcome to the dungeons of Jarl, many have entered, few have returned. There is a key at the end that can get you out, good luck finding it.",
+               text : "SIGN: Welcome to the dungeons of Jarl, many have entered, few have returned.",
                x : x*32,
                y : y*32,
                room : room
@@ -779,6 +799,7 @@
       show : false,
       construct : function () {
          this.el = document.getElementById("inventory");
+         this.el.style.display = this.show ? "" : "none";
          var that = this;
          Mousetrap.bind(["i"], function() {
             that.toggleShow();
@@ -797,10 +818,15 @@
       },
       toggleShow : function () {
          this.show = !this.show;
-         this.el.style.display = this.show ? "" : "hidden";
+         this.el.style.display = this.show ? "" : "none";
+
+         console.log("inventory", this.el)
       },
       update : function () {
-         var html = "";
+         var html =
+            Player.stats() +
+            "<p><strong>INVENTORY</strong></p>"  + 
+            "<ul>";
 
          for (var i = 0, len = this.items.length; i < len; i++) {
             var item = this.items[i];
@@ -810,6 +836,12 @@
                html += "<strong>" + item.name + "</strong>: " + item.description ;
             html += "</li>";
          }
+
+         if (this.items.length === 0) {
+            html += "<li>Inventory is empty</li>";
+         }
+
+         html += "</ul>";
 
          this.el.innerHTML = html;
       },

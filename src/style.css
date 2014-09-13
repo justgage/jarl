@@ -1,6 +1,7 @@
 body {
    background-color: #170E0B;
    color: #B19992;
+   font-family: monospace;
 }
 
 .top {
@@ -17,7 +18,6 @@ body {
 }
 
 #text {
-   font-family: monospace;
    width: 480px;
    height: 480px;
    left : 480px;
@@ -60,3 +60,33 @@ body {
         filter: FlipH;
         -ms-filter: "FlipH";
 }
+
+#inventory {
+   background: rgba(43, 12, 0, 0.75);
+   padding : 1em;
+   margin : 0px;
+   width:500px;
+}
+
+#inventory ul {
+   margin : 0;
+   padding : 0;
+}
+
+#inventory p { 
+   text-align:center;
+   margin : 0;
+   border-bottom : 1px solid #170E0B;
+}
+
+
+#inventory li {
+   list-style:none;
+   padding:10px 0;
+}
+
+.left {
+   float:left;
+}
+
+
