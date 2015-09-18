@@ -95,7 +95,7 @@
 
       takeTurnSquare : function(x, y, callback) {
          if (this.turn.type === "player") {
-            callback(this.room.grid[x/32][y/32]);
+            callback(this.room.grid[x/32][y/32], this.room.itemGrid[x/32][y/32]);
             this.beginTurns();
          }
       },
@@ -152,6 +152,7 @@
          message.className = "mess";
 
          this.el.insertBefore(message, this.last);
+
          this.last = message;
       },
       move : function(x, y) {
@@ -207,8 +208,8 @@
          Jarl.takeTurnSquare(
             this.x + x,
             this.y + y,
-            function(square) {
-               if (square.blocking === false) {
+            function(square, item) {
+               if (square.blocking === false && (item === null || item.blocking === false)) {
                   var newx = that.x + x;
                   that.flipped = (newx === that.x) ? // is it the same
                      that.flipped : // true: keep it the same
@@ -230,6 +231,9 @@
                }
 
                square.trigger(that);
+               if (item != null) {
+                  item.trigger(that);
+               }
             });
 
       }
@@ -241,6 +245,24 @@
       blocking : true, // means other object cant move through him
       src : "night.min.gif",
       z : 4,
+      hp : 100,
+      stats : function() {
+         var html = "<img class='left' src='" + this.src + "'>";
+
+         var hp = "HP = ["
+
+         for (var i = 0, len = this.hp / 2; i < len; i++) {
+            hp += "="
+         }
+
+         for (var i = 0, len = 50 - this.hp / 2; i < len; i++) {
+            hp += " "
+         }
+         hp += "]"
+
+         html += hp;
+         return html;
+      },
       bind : function() {
 
          var me = this;
@@ -280,7 +302,7 @@
 
          Mousetrap.bind(["?"], function() {
 
-            help = [
+            var help = [
                "---Controls---",
                "arrow keys - move",
                "~ or ~",
@@ -293,11 +315,12 @@
                "n - down-left",
                "m - down-right",
                "",
+               "i - view inventory",
                "---GamePlay---",
                "move twards an enemy to attack"];
 
                Messages.push(help.join("<br />"));
-         }, 'keyup');
+         });
       }
    });
 
@@ -345,19 +368,23 @@
          this.width = width;
 
          this.grid = [];
+         this.itemGrid = [];
 
 
-         // populate grid with null
+         // populate grid with ground / null
          for (var i = 0; i < width; i++) {
             this.grid[i] = [];
+            this.itemGrid[i] = [];
             for (var j = 0; j < height; j++) {
                this.grid[i][j] = Ground.extend({x : i * 32, y : j *32});
+               this.itemGrid[i][j] = null;
             }
          }
 
          this.doorObj = doorObj;
 
          this.createWalls();
+         this.createItems();
       },
 
       /**
@@ -371,7 +398,9 @@
       doorPlacement : function (way, distance) {
          var x = 0;
          var y = 0;
-         distance = distance || 1;
+         if (distance !== 0) {
+            distance = distance || 1;
+         }
 
          switch (way) {
             case 'top':
@@ -415,6 +444,52 @@
 
          //right
          this.createVertWall(this.width-1, this.doorObj.right)
+      },
+
+      createItems : function() {
+         // run type function listed below
+         this.types[this.type](this);
+      }, 
+
+      types : {
+         beginning : function(room) {
+            var x = Math.floor(room.width/2) - 2;
+            var y = Math.floor(room.height/2);
+            room.itemGrid[x][y] = Items.sign.extend({
+               text : "SIGN: Welcome to the dungeons of Jarl, many have entered, few have returned.",
+               x : x*32,
+               y : y*32,
+               room : room
+            });
+
+            var cord = room.doorPlacement("bottom", 0);
+
+            room.itemGrid[cord.x][cord.y] = Items.finalDoor.extend({
+               x : cord.x*32,
+               y : cord.y*32,
+               room : room
+            });
+         },
+         random : function(room) {
+            
+         },
+         end : function(room) {
+            var xcenter = Math.floor(room.width/2);
+            var ycenter = Math.floor(room.height/2);
+            room.itemGrid[xcenter][ycenter] = Items.finalKey.extend({
+               x : xcenter*32,
+               y : ycenter*32,
+               room : room
+            });
+         }
+      },
+
+      removeItem : function (x, y) {
+         x = x/32;
+         y = y/32;
+         var item = this.itemGrid[x][y];
+         this.itemGrid[x][y] = null;
+         this.el.removeChild(item.el);
       },
 
       createVertWall : function(x, door) {
@@ -461,10 +536,17 @@
          for (var i = 0; i < this.width; i++) {
             for (var j = 0; j < this.height; j++) {
                var square = this.grid[i][j];
+               var item = this.itemGrid[i][j];
+
                if (square !== null) {
                   square.create();
                   this.el.appendChild(square.el);
                   square.step();
+               }
+               if (item !== null) {
+                  item.create();
+                  this.el.appendChild(item.el);
+                  item.step();
                }
             }
          }
@@ -576,7 +658,7 @@
     */
 
    var LevelGen = Extendable.extend({
-      depth : 5,
+      depth : 3,
       branchChanse : 0.5,
       begin : function() {
 
@@ -678,6 +760,100 @@
          room.init(height, width, doors);
 
          return room;
+      }
+   });
+
+   var Items = {
+      finalKey : Gamepiece.extend({
+         name : "Final Key",
+         description : "The way out of this place",
+         src : "finalKey.gif",
+         trigger : function () { 
+            Inventory.add(this) 
+            this.room.removeItem(this.x,this.y);
+         }
+      }),
+      finalDoor : Gamepiece.extend({
+         src : "finalDoor.gif",
+         trigger : function () {
+            if (Inventory.contains("Final Key")) {
+               alert("Congradulations you won Jarl! Thanks for playing my game I hope you enjoyed it!");
+            } else {
+               Messages.push("Doors locked tight! The Only way out is to find the key.");
+            }
+         }
+      }),
+      sign : Gamepiece.extend({
+         src : "sign.gif",
+         blocking : true,
+         trigger : function () {
+            Messages.push(this.text);
+         }
+      })
+   };
+
+   var Inventory  = Extendable.extend({
+      size : 20,
+      items : [],
+      selected : 0,
+      show : false,
+      construct : function () {
+         this.el = document.getElementById("inventory");
+         this.el.style.display = this.show ? "" : "none";
+         var that = this;
+         Mousetrap.bind(["i"], function() {
+            that.toggleShow();
+         });
+         this.update();
+      },
+      add : function (item) {
+         if (this.items.length < this.size) {
+            this.items.push(item);
+            Messages.push(item.name + " was added to your invenetory");
+         }
+
+         this.update();
+      },
+      create : function () {
+      },
+      toggleShow : function () {
+         this.show = !this.show;
+         this.el.style.display = this.show ? "" : "none";
+
+         console.log("inventory", this.el)
+      },
+      update : function () {
+         var html =
+            Player.stats() +
+            "<p><strong>INVENTORY</strong></p>"  + 
+            "<ul>";
+
+         for (var i = 0, len = this.items.length; i < len; i++) {
+            var item = this.items[i];
+
+            html += "<li class='" + (this.selected == i ? "selected" : "") + "'>";
+               html += "<img class='left' src='" + item.src + "' />";
+               html += "<strong>" + item.name + "</strong>: " + item.description ;
+            html += "</li>";
+         }
+
+         if (this.items.length === 0) {
+            html += "<li>Inventory is empty</li>";
+         }
+
+         html += "</ul>";
+
+         this.el.innerHTML = html;
+      },
+      contains : function (name) {
+         for (var i = 0, len = this.items.length; i < len; i++) {
+            var item = this.items[i];
+            if (item.name === name) {
+               return true;
+            }
+         }
+
+         return false;
       }
    });
 
